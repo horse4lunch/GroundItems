@@ -1,4 +1,4 @@
-package com.example;
+package com.HighlightStackables;
 import com.google.inject.Provides;
 
 import javax.inject.Inject;
@@ -37,6 +37,7 @@ public class HighlightStackablesPlugin extends Plugin
 	private List<String> spawnedItems;
 
 
+
 	@Inject
 	private HighlightStackablesConfig config;
 
@@ -71,7 +72,15 @@ public class HighlightStackablesPlugin extends Plugin
 
 	groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 	}
+	@Subscribe
+	public void onClientTick(ClientTick event)
+	{
 
+		if(spawnedItems.isEmpty() && groundItemsConfig.getHighlightItems() != config.getOrginalItems()){
+			groundItemsConfig.setHighlightedItem(config.getOrginalItems());
+
+		}
+	}
 
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
@@ -90,14 +99,16 @@ public class HighlightStackablesPlugin extends Plugin
 		final TileItem item = itemSpawned.getItem();
 		final int id = item.getId();
 		final ItemComposition itemComposition = itemManager.getItemComposition(id);
-		final String name = itemComposition.getName().toLowerCase();
-		groundItemsConfig.setHighlightedItem(config.getOrginalItems());
+
+
 
 		if (itemComposition.isStackable()) {
-
+			groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 
 			String oldList = groundItemsConfig.getHighlightItems().toString();
 			String exclusionList = groundItemsConfig.getHiddenItems().toString();
+
+
 
 
 			if(config.inventoryStackable()) {
@@ -137,7 +148,7 @@ public class HighlightStackablesPlugin extends Plugin
 		final TileItem item = itemDespawned.getItem();
 		final int id = item.getId();
 		final ItemComposition itemComposition = itemManager.getItemComposition(id);
-		final String name = itemComposition.getName().toLowerCase();
+
 		spawnedItems.remove(itemComposition.getName());
 		String formatedString = spawnedItems.toString();
 		formatedString = formatedString.substring(1, formatedString.length() - 1);
