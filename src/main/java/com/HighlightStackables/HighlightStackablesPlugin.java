@@ -124,11 +124,12 @@ public class HighlightStackablesPlugin extends Plugin
 
 			String oldList = groundItemsConfig.getHighlightItems().toString();
 
-			spawnedItems.add(itemComposition.getName());
+
 
 
 			if(config.inventoryStackable()) {
 				if (!oldList.contains(itemComposition.getName()) && inventory.contains(itemComposition.getId())) {
+					spawnedItems.add(itemComposition.getName());
 					groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 
 					HashSet<String> uniqueSet = new HashSet<>();
@@ -157,6 +158,7 @@ public class HighlightStackablesPlugin extends Plugin
 			}else
 			{
 				if (!oldList.contains(itemComposition.getName()) && !exclusionList.contains(itemComposition.getName())){
+					spawnedItems.add(itemComposition.getName());
 					groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 
 
