@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.ClientTick;
+import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
 
@@ -18,13 +19,16 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
+
 import net.runelite.client.plugins.grounditems.GroundItemsConfig;
 import net.runelite.client.plugins.grounditems.GroundItemsPlugin;
 
 
-import java.util.ArrayList;
-import java.util.List;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 @Slf4j
@@ -36,7 +40,7 @@ public class HighlightStackablesPlugin extends Plugin
 {
 	private List<String> spawnedItems;
 
-
+	private List<String> spawnedItemsUnique;
 
 	@Inject
 	private HighlightStackablesConfig config;
@@ -58,10 +62,13 @@ public class HighlightStackablesPlugin extends Plugin
 
 
 
+
+
 	@Override
 	protected void startUp()
 	{
 		spawnedItems = new ArrayList<>();
+		spawnedItemsUnique = new ArrayList<>();
 		config.setOriginalItem(groundItemsConfig.getHighlightItems());
 
 	}
@@ -72,10 +79,20 @@ public class HighlightStackablesPlugin extends Plugin
 
 	groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 	}
+
+	@Subscribe
+	public void onGameStateChanged(final GameStateChanged event)
+	{
+		if (event.getGameState() == GameState.LOADING)
+		{
+			spawnedItems.clear();
+
+		}
+	}
 	@Subscribe
 	public void onClientTick(ClientTick event)
 	{
-
+		log.info("pp" + spawnedItems);
 		if(spawnedItems.isEmpty() && groundItemsConfig.getHighlightItems() != config.getOrginalItems()){
 			groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 
@@ -99,25 +116,39 @@ public class HighlightStackablesPlugin extends Plugin
 		final TileItem item = itemSpawned.getItem();
 		final int id = item.getId();
 		final ItemComposition itemComposition = itemManager.getItemComposition(id);
+		String exclusionList = groundItemsConfig.getHiddenItems().toString();
 
 
-
-		if (itemComposition.isStackable()) {
+		if (itemComposition.isStackable()&& !exclusionList.contains(itemComposition.getName()) ) {
 
 
 			String oldList = groundItemsConfig.getHighlightItems().toString();
-			String exclusionList = groundItemsConfig.getHiddenItems().toString();
 
-
+			spawnedItems.add(itemComposition.getName());
 
 
 			if(config.inventoryStackable()) {
-				if (!oldList.contains(itemComposition.getName()) && !exclusionList.contains(itemComposition.getName()) && inventory.contains(itemComposition.getId())) {
+				if (!oldList.contains(itemComposition.getName()) && inventory.contains(itemComposition.getId())) {
 					groundItemsConfig.setHighlightedItem(config.getOrginalItems());
-					spawnedItems.add(itemComposition.getName());
+
+					HashSet<String> uniqueSet = new HashSet<>();
+
+					// Create a new ArrayList to store unique elements
+					ArrayList<String> spawnedItemsUnique = new ArrayList<>();
+
+					for (String element : spawnedItems) {
+						// Add the element to the uniqueSet if it doesn't exist already
+						if (uniqueSet.add(element)) {
+							// If the element is successfully added to the uniqueSet,
+							// add it to the spawnedItemsUnique list as well
+							spawnedItemsUnique.add(element);
+						}
+					}
 
 
-					String formatedString = spawnedItems.toString();
+
+
+					String formatedString = spawnedItemsUnique.toString();
 					formatedString = formatedString.substring(1, formatedString.length() - 1);
 
 					groundItemsConfig.setHighlightedItem(config.getOrginalItems() + "," + formatedString);
@@ -127,12 +158,26 @@ public class HighlightStackablesPlugin extends Plugin
 			{
 				if (!oldList.contains(itemComposition.getName()) && !exclusionList.contains(itemComposition.getName())){
 					groundItemsConfig.setHighlightedItem(config.getOrginalItems());
-					spawnedItems.add(itemComposition.getName());
 
 
-					String formatedString = spawnedItems.toString();
+
+					HashSet<String> uniqueSet = new HashSet<>();
+
+					// Create a new ArrayList to store unique elements
+					ArrayList<String> spawnedItemsUnique = new ArrayList<>();
+
+					for (String element : spawnedItems) {
+						// Add the element to the uniqueSet if it doesn't exist already
+						if (uniqueSet.add(element)) {
+							// If the element is successfully added to the uniqueSet,
+							// add it to the spawnedItemsUnique list as well
+							spawnedItemsUnique.add(element);
+						}
+					}
+
+
+					String formatedString = spawnedItemsUnique.toString();
 					formatedString = formatedString.substring(1, formatedString.length() - 1);
-
 
 					groundItemsConfig.setHighlightedItem(config.getOrginalItems() + "," + formatedString);
 
@@ -152,7 +197,21 @@ public class HighlightStackablesPlugin extends Plugin
 		final ItemComposition itemComposition = itemManager.getItemComposition(id);
 
 		spawnedItems.remove(itemComposition.getName());
-		String formatedString = spawnedItems.toString();
+
+		HashSet<String> uniqueSet = new HashSet<>();
+
+		// Create a new ArrayList to store unique elements
+		ArrayList<String> spawnedItemsUnique = new ArrayList<>();
+
+		for (String element : spawnedItems) {
+			// Add the element to the uniqueSet if it doesn't exist already
+			if (uniqueSet.add(element)) {
+				// If the element is successfully added to the uniqueSet,
+				// add it to the spawnedItemsUnique list as well
+				spawnedItemsUnique.add(element);
+			}
+		}
+		String formatedString = spawnedItemsUnique.toString();
 		formatedString = formatedString.substring(1, formatedString.length() - 1);
 		groundItemsConfig.setHighlightedItem(config.getOrginalItems() + "," + formatedString);
 
