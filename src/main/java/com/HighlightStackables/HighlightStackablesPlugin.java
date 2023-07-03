@@ -92,7 +92,7 @@ public class HighlightStackablesPlugin extends Plugin
 	@Subscribe
 	public void onClientTick(ClientTick event)
 	{
-		log.info("pp" + spawnedItems);
+
 		if(spawnedItems.isEmpty() && groundItemsConfig.getHighlightItems() != config.getOrginalItems()){
 			groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 
@@ -133,14 +133,13 @@ public class HighlightStackablesPlugin extends Plugin
 
 					HashSet<String> uniqueSet = new HashSet<>();
 
-					// Create a new ArrayList to store unique elements
+
 					ArrayList<String> spawnedItemsUnique = new ArrayList<>();
 
 					for (String element : spawnedItems) {
-						// Add the element to the uniqueSet if it doesn't exist already
+
 						if (uniqueSet.add(element)) {
-							// If the element is successfully added to the uniqueSet,
-							// add it to the spawnedItemsUnique list as well
+
 							spawnedItemsUnique.add(element);
 						}
 					}
@@ -163,14 +162,13 @@ public class HighlightStackablesPlugin extends Plugin
 
 					HashSet<String> uniqueSet = new HashSet<>();
 
-					// Create a new ArrayList to store unique elements
+
 					ArrayList<String> spawnedItemsUnique = new ArrayList<>();
 
 					for (String element : spawnedItems) {
-						// Add the element to the uniqueSet if it doesn't exist already
+
 						if (uniqueSet.add(element)) {
-							// If the element is successfully added to the uniqueSet,
-							// add it to the spawnedItemsUnique list as well
+
 							spawnedItemsUnique.add(element);
 						}
 					}
@@ -204,10 +202,9 @@ public class HighlightStackablesPlugin extends Plugin
 		ArrayList<String> spawnedItemsUnique = new ArrayList<>();
 
 		for (String element : spawnedItems) {
-			// Add the element to the uniqueSet if it doesn't exist already
+
 			if (uniqueSet.add(element)) {
-				// If the element is successfully added to the uniqueSet,
-				// add it to the spawnedItemsUnique list as well
+
 				spawnedItemsUnique.add(element);
 			}
 		}
