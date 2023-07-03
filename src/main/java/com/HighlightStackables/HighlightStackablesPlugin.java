@@ -103,7 +103,7 @@ public class HighlightStackablesPlugin extends Plugin
 
 
 		if (itemComposition.isStackable()) {
-			groundItemsConfig.setHighlightedItem(config.getOrginalItems());
+
 
 			String oldList = groundItemsConfig.getHighlightItems().toString();
 			String exclusionList = groundItemsConfig.getHiddenItems().toString();
@@ -113,6 +113,7 @@ public class HighlightStackablesPlugin extends Plugin
 
 			if(config.inventoryStackable()) {
 				if (!oldList.contains(itemComposition.getName()) && !exclusionList.contains(itemComposition.getName()) && inventory.contains(itemComposition.getId())) {
+					groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 					spawnedItems.add(itemComposition.getName());
 
 
@@ -125,6 +126,7 @@ public class HighlightStackablesPlugin extends Plugin
 			}else
 			{
 				if (!oldList.contains(itemComposition.getName()) && !exclusionList.contains(itemComposition.getName())){
+					groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 					spawnedItems.add(itemComposition.getName());
 
 
