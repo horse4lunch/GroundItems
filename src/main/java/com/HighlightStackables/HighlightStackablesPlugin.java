@@ -34,15 +34,11 @@ import java.util.Set;
 		name = "Highlight Stackables"
 )
 @PluginDependency(GroundItemsPlugin.class)
-public class HighlightStackablesPlugin extends Plugin
-{
+public class HighlightStackablesPlugin extends Plugin {
 	private List<String> spawnedItems;
 	private List<String> spawnedItemsUnique;
-	private HashSet<String> uniqueSet;
-
+	private Set<String> uniqueSet;
 	private String formattedString;
-
-
 
 	@Inject
 	private HighlightStackablesConfig config;
@@ -85,7 +81,7 @@ public class HighlightStackablesPlugin extends Plugin
 
 	@Subscribe
 	public void onGameStateChanged(final GameStateChanged event) {
-		//clear item lists if you leave the area
+		// Clear item lists if you leave the area
 		if (event.getGameState() == GameState.LOADING) {
 			spawnedItems.clear();
 			spawnedItemsUnique.clear();
@@ -94,7 +90,7 @@ public class HighlightStackablesPlugin extends Plugin
 
 	@Subscribe
 	public void onClientTick(ClientTick event) {
-		// Check if spawnedItems is empty and if Highlighted items from GroundItemsConfig and My config don't match
+		// Check if spawnedItems is empty and if Highlighted items from GroundItemsConfig and my config don't match
 		if (spawnedItems.isEmpty() && !groundItemsConfig.getHighlightItems().equals(config.getOrginalItems())) {
 			// Restore the original highlighted items
 			groundItemsConfig.setHighlightedItem(config.getOrginalItems());
@@ -109,8 +105,7 @@ public class HighlightStackablesPlugin extends Plugin
 		}
 	}
 
-	public void SortItems(){
-
+	private void sortItems() {
 		// Copy spawnedItems to spawnedItemsUnique removing all duplicates.
 		for (String element : spawnedItems) {
 			boolean alreadyExists = false;
@@ -126,8 +121,8 @@ public class HighlightStackablesPlugin extends Plugin
 		}
 	}
 
-	public void FormatString(){
-		// Remove [ and ] from string
+	private void formatString() {
+		// Convert List to String, Remove [ and ]
 		formattedString = spawnedItemsUnique.toString();
 		formattedString = formattedString.substring(1, formattedString.length() - 1);
 		groundItemsConfig.setHighlightedItem(config.getOrginalItems() + "," + formattedString);
@@ -147,17 +142,17 @@ public class HighlightStackablesPlugin extends Plugin
 					spawnedItems.add(itemComposition.getName());
 					groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 
-					SortItems();
+					sortItems();
 
-					FormatString();
+					formatString();
 				}
 			} else {
 				spawnedItems.add(itemComposition.getName());
 				groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 
-				SortItems();
+				sortItems();
 
-				FormatString();
+				formatString();
 			}
 		}
 	}
@@ -171,10 +166,8 @@ public class HighlightStackablesPlugin extends Plugin
 
 		spawnedItems.remove(itemComposition.getName());
 
-		SortItems();
+		sortItems();
 
-		FormatString();
+		formatString();
 	}
-
-
-	}
+}
