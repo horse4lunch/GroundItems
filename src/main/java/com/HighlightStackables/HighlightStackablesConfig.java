@@ -71,7 +71,7 @@ public interface HighlightStackablesConfig extends Config
     )
     default boolean inventoryStackable()
     {
-        return false;
+        return true;
     }
 
 }
