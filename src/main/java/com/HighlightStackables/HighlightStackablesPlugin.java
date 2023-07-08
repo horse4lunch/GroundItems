@@ -6,14 +6,12 @@ import javax.inject.Inject;
 
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
-import net.runelite.api.events.ClientTick;
-import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.ItemDespawned;
-import net.runelite.api.events.ItemSpawned;
+import net.runelite.api.events.*;
 
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 
+import net.runelite.client.events.ClientShutdown;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
@@ -29,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+
 @Slf4j
 @PluginDescriptor(
 		name = "Highlight Stackables"
@@ -39,7 +38,6 @@ public class HighlightStackablesPlugin extends Plugin {
 	private List<String> spawnedItemsUnique;
 	private Set<String> uniqueSet;
 	private String formattedString;
-
 	@Inject
 	private HighlightStackablesConfig config;
 
@@ -78,6 +76,11 @@ public class HighlightStackablesPlugin extends Plugin {
 		// Restore the original highlighted items to GroundItemsConfig
 		groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 	}
+	@Subscribe
+	public void onClientShutdown(ClientShutdown event) {
+		// Restore the original highlighted items to GroundItemsConfig
+		groundItemsConfig.setHighlightedItem(config.getOrginalItems());
+	}
 
 	@Subscribe
 	public void onGameStateChanged(final GameStateChanged event) {
@@ -87,16 +90,14 @@ public class HighlightStackablesPlugin extends Plugin {
 			spawnedItemsUnique.clear();
 		}
 	}
-
 	@Subscribe
-	public void onClientTick(ClientTick event) {
+	public void onGameTick(GameTick event) {
 		// Check if spawnedItems is empty and if Highlighted items from GroundItemsConfig and my config don't match
 		if (spawnedItems.isEmpty() && !groundItemsConfig.getHighlightItems().equals(config.getOrginalItems())) {
 			// Restore the original highlighted items
 			groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 		}
 	}
-
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event) {
 		if (event.getGroup().equals("highlightStackables")) {
@@ -165,6 +166,14 @@ public class HighlightStackablesPlugin extends Plugin {
 		final ItemComposition itemComposition = itemManager.getItemComposition(id);
 
 		spawnedItems.remove(itemComposition.getName());
+
+		//Iterate over the spawnedItemsUnique list and remove any element that is not present in the spawnedItems list
+		for(String element : spawnedItemsUnique){
+			if(!spawnedItems.contains(element)){
+				spawnedItemsUnique.remove(element);
+				break;
+			}
+		}
 
 		sortItems();
 
