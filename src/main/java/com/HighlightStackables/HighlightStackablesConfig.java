@@ -80,7 +80,7 @@ public interface HighlightStackablesConfig extends Config
     @ConfigItem(
             keyName = "pauseMode",
             name = "Use hotkey to highlight",
-            description = "<html>This lets you pause the plugin so you can use the ground items hotkey<br>If items drop while paused they will not be highlighted and could cause strange behavior.</html>",
+            description = "<html>This lets you pause the plugin so you can use the ground items hotkey to highlight.</html>",
             section = experimental,
             position = 41
     )
