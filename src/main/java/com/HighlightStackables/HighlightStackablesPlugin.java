@@ -4,6 +4,9 @@ import com.google.inject.Provides;
 
 import javax.inject.Inject;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.*;
@@ -14,6 +17,7 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ClientShutdown;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -46,6 +50,12 @@ public class HighlightStackablesPlugin extends Plugin {
 		return configManager.getConfig(HighlightStackablesConfig.class);
 	}
 
+	@Getter(AccessLevel.PACKAGE)
+	@Setter(AccessLevel.PACKAGE)
+	private boolean hotKeyPressed;
+
+	@Inject
+	private HighlightStackablesHotkeyListener hotkeyListener;
 	@Inject
 	private GroundItemsPlugin groundItemsPlugin;
 
@@ -60,12 +70,15 @@ public class HighlightStackablesPlugin extends Plugin {
 
 	@Inject
 	private ItemManager itemManager;
+	@Inject
+	private KeyManager keyManager;
 
 	@Override
 	protected void startUp() {
 		spawnedItems = new ArrayList<>();
 		spawnedItemsUnique = new ArrayList<>();
 		uniqueSet = new HashSet<>();
+		keyManager.registerKeyListener(hotkeyListener);
 
 		// Store the original highlighted items from GroundItemsConfig
 		config.setOriginalItem(groundItemsConfig.getHighlightItems());
@@ -75,6 +88,7 @@ public class HighlightStackablesPlugin extends Plugin {
 	protected void shutDown() {
 		// Restore the original highlighted items to GroundItemsConfig
 		groundItemsConfig.setHighlightedItem(config.getOrginalItems());
+		keyManager.unregisterKeyListener(hotkeyListener);
 	}
 	@Subscribe
 	public void onClientShutdown(ClientShutdown event) {
@@ -92,10 +106,27 @@ public class HighlightStackablesPlugin extends Plugin {
 	}
 	@Subscribe
 	public void onGameTick(GameTick event) {
+		if (hotKeyPressed) {
+			return; // hotKeyPressed is true, skip the rest of the function
+		}
 		// Check if spawnedItems is empty and if Highlighted items from GroundItemsConfig and my config don't match
 		if (spawnedItems.isEmpty() && !groundItemsConfig.getHighlightItems().equals(config.getOrginalItems())) {
 			// Restore the original highlighted items
 			groundItemsConfig.setHighlightedItem(config.getOrginalItems());
+		}
+		//check if spawned items isnt empty
+		if (!spawnedItems.isEmpty()) {
+			formatString();
+			// Create the string that should be in groundItems Config
+			String finishedString = new String();
+			finishedString = config.getOrginalItems() + "," + formattedString;
+			//Check if finished string = groundItems Config
+			if(finishedString != groundItemsConfig.getHighlightItems()){
+				//Set groundItems Config
+				sortItems();
+				groundItemsConfig.setHighlightedItem(config.getOrginalItems() + "," + formattedString);
+			}
+
 		}
 	}
 	@Subscribe
@@ -138,17 +169,26 @@ public class HighlightStackablesPlugin extends Plugin {
 		String exclusionList = groundItemsConfig.getHiddenItems().toString();
 
 		if (itemComposition.isStackable() && !exclusionList.contains(itemComposition.getName())) {
-			if (config.inventoryStackable()) {
+			if (config.inventoryMode()) {
 				if (inventory.contains(itemComposition.getId())) {
 					spawnedItems.add(itemComposition.getName());
+					//Check if hotkey is pressed after adding item to spawned item list, But before sort/format
+					if (hotKeyPressed) {
+						return; // hotKeyPressed is true, skip the rest of the function
+					}
 					groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 
 					sortItems();
 
 					formatString();
+
 				}
 			} else {
 				spawnedItems.add(itemComposition.getName());
+				//Check if hotkey is pressed after adding item to spawned item list, But before sort/format
+				if (hotKeyPressed) {
+					return; // hotKeyPressed is true, skip the rest of the function
+				}
 				groundItemsConfig.setHighlightedItem(config.getOrginalItems());
 
 				sortItems();
@@ -160,6 +200,7 @@ public class HighlightStackablesPlugin extends Plugin {
 
 	@Subscribe
 	public void onItemDespawned(ItemDespawned itemDespawned) {
+
 		final ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
 		final TileItem item = itemDespawned.getItem();
 		final int id = item.getId();
@@ -173,6 +214,10 @@ public class HighlightStackablesPlugin extends Plugin {
 				spawnedItemsUnique.remove(element);
 				break;
 			}
+		}
+		//Check if hotkey is pressed after removing item from spawned item list, But before sort/format
+		if (hotKeyPressed) {
+			return; // hotKeyPressed is true, skip the rest of the function
 		}
 
 		sortItems();

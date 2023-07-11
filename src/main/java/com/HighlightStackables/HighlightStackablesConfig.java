@@ -27,10 +27,8 @@
 
 
 package com.HighlightStackables;
-import net.runelite.client.config.Config;
-import net.runelite.client.config.ConfigGroup;
-import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.ConfigSection;
+import net.runelite.client.config.*;
+import net.runelite.client.config.Keybind;
 
 
 @ConfigGroup("highlightStackables")
@@ -38,7 +36,7 @@ public interface HighlightStackablesConfig extends Config
 {
     @ConfigSection(
             name = "Item Lists",
-            description = "The highlighted and hidden item lists",
+            description = "The highlighted item list",
             position = 0
     )
     String itemLists = "itemLists";
@@ -63,14 +61,42 @@ public interface HighlightStackablesConfig extends Config
     void setOriginalItem(String key);
 
     @ConfigItem(
-            keyName = "InventoryStackable",
+            keyName = "InventoryMode",
             name = "Highlight stackables in inventory",
             description = "<html>Highlight stackable ground items already in inventory.<br>If this is disabled, all stackable items will be highlighted.<br>Unless they are on the hidden item list.</html>",
 
             position = 32
     )
-    default boolean inventoryStackable()
+    default boolean inventoryMode()
     {
         return true;
+    }
+    @ConfigSection(
+            name = "Experimental",
+            description = "Experimental options",
+            position = 40
+    )
+    String experimental = "Experimental";
+    @ConfigItem(
+            keyName = "pauseMode",
+            name = "Use hotkey to highlight",
+            description = "<html>This lets you pause the plugin so you can use the ground items hotkey<br>If items drop while paused they will not be highlighted and could cause strange behavior.</html>",
+            section = experimental,
+            position = 41
+    )
+    default boolean pauseMode()
+    {
+        return false;
+    }
+    @ConfigItem(
+            keyName = "hotkey",
+            name = "Hotkey",
+            description = "Configures the hotkey used by the Ground Items plugin",
+            section = experimental,
+            position = 42
+    )
+    default Keybind hotkey()
+    {
+        return Keybind.ALT;
     }
 }
