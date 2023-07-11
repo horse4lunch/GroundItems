@@ -91,7 +91,7 @@ public interface HighlightStackablesConfig extends Config
     @ConfigItem(
             keyName = "hotkey",
             name = "Hotkey",
-            description = "Configures the hotkey used by the Ground Items plugin",
+            description = "Set this to match your hotkey from GroundItemsPlugin",
             section = experimental,
             position = 42
     )
