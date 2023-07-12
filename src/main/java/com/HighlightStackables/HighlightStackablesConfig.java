@@ -71,6 +71,8 @@ public interface HighlightStackablesConfig extends Config
     {
         return true;
     }
+
+    //I've tested this quite a bit with no issues but im still gonna leave the experimental label on it for now.
     @ConfigSection(
             name = "Experimental",
             description = "Experimental options",
