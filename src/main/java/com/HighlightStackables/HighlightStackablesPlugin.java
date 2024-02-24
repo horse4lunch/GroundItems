@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
+import net.runelite.api.annotations.Varbit;
 import net.runelite.api.events.*;
 
 import net.runelite.client.config.ConfigManager;
@@ -26,6 +27,7 @@ import net.runelite.client.plugins.grounditems.GroundItemsConfig;
 import net.runelite.client.plugins.grounditems.GroundItemsPlugin;
 import net.runelite.client.plugins.grounditems.GroundItemsOverlay;
 
+import java.io.Console;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -70,6 +72,12 @@ public class HighlightStackablesPlugin extends Plugin {
 	private ItemManager itemManager;
 	@Inject
 	private KeyManager keyManager;
+
+	private final int[] runes = {0,ItemID.AIR_RUNE,ItemID.WATER_RUNE,ItemID.EARTH_RUNE,ItemID.FIRE_RUNE,
+			ItemID.MIND_RUNE,ItemID.CHAOS_RUNE,ItemID.DEATH_RUNE,ItemID.BLOOD_RUNE,ItemID.COSMIC_RUNE,
+			ItemID.NATURE_RUNE,ItemID.LAW_RUNE,ItemID.BODY_RUNE,ItemID.SOUL_RUNE,ItemID.ASTRAL_RUNE,ItemID.MIST_RUNE,
+			ItemID.MUD_RUNE,ItemID.DUST_RUNE,ItemID.LAVA_RUNE,ItemID.STEAM_RUNE,ItemID.SMOKE_RUNE,ItemID.WRATH_RUNE};
+
 
 	@Override
 	protected void startUp() {
@@ -227,8 +235,47 @@ public class HighlightStackablesPlugin extends Plugin {
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event) {
 		final ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
+		String exclusionList = groundItemsConfig.getHiddenItems().toString();
+
+		int[] runeSlotVarbitValues = {client.getVarbitValue(29),client.getVarbitValue(1622),
+				client.getVarbitValue(1623),client.getVarbitValue(14285)};
+
 		if (event.getItemContainer() == inventory) {
 			final Item[] currentItems = event.getItemContainer().getItems();
+
+
+			for(int i = 0; i < currentItems.length; i++)
+			{
+				int id = currentItems[i].getId();
+				final ItemComposition itemComposition = itemManager.getItemComposition(id);
+				// check for rune pouch
+				if(itemComposition.getId() == ItemID.RUNE_POUCH || itemComposition.getId() == ItemID.DIVINE_RUNE_POUCH)
+				{
+					//iterate through rune pouch varbits
+					for (int j = 0; j < runeSlotVarbitValues.length; j++)
+					{
+						// if varbitvalue != 0 iterate through runes until we find the rune corresponding to varbitvalue
+						if(runeSlotVarbitValues[j] != 0)
+						{
+							for (int k = 0; k < runes.length;k++)
+							{
+								if(runeSlotVarbitValues[j] == k)
+								{
+									//add rune to highlight list
+									spawnedItems.add(itemManager.getItemComposition(runes[k]).getName());
+								}
+							}
+
+						}
+					}
+				}
+
+				if(itemComposition.isStackable()&& !exclusionList.contains(itemComposition.getName()))
+				{
+					spawnedItems.add(itemComposition.getName());
+
+				}
+			}
 
 			//compare the players current inventory to the previous inventory.
 			for (int i = 0; i < currentItems.length; i++) {
@@ -260,6 +307,32 @@ public class HighlightStackablesPlugin extends Plugin {
 			}
 			previousInventory = currentItems.clone(); // Update the previous inventory state
 		}
+	}
+	@Subscribe
+	public void onVarbitChanged(VarbitChanged event)
+	{
+
+		int[] runeSlotVarbitValues = {client.getVarbitValue(29),client.getVarbitValue(1622),
+			client.getVarbitValue(1623),client.getVarbitValue(14285)};
+
+		for (int i = 0; i < runeSlotVarbitValues.length; i++)
+		{
+			if(runeSlotVarbitValues[i] != 0)
+			{
+				for (int j = 0; j < runes.length;j++)
+				{
+					if(runeSlotVarbitValues[i] == j)
+					{
+						final ItemComposition itemComposition = itemManager.getItemComposition(runes[j]);
+						spawnedItems.add(itemComposition.getName());
+					}
+
+				}
+
+			}
+		}
+
+
 	}
 
 }
