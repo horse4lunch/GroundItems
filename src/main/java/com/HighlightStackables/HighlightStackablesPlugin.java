@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
-import net.runelite.api.annotations.Varbit;
 import net.runelite.api.events.*;
 
 import net.runelite.client.config.ConfigManager;
@@ -27,7 +26,6 @@ import net.runelite.client.plugins.grounditems.GroundItemsConfig;
 import net.runelite.client.plugins.grounditems.GroundItemsPlugin;
 import net.runelite.client.plugins.grounditems.GroundItemsOverlay;
 
-import java.io.Console;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -124,7 +122,7 @@ public class HighlightStackablesPlugin extends Plugin {
 			formatString();
 
 			// Create the string that should be in groundItems Config
-			String finishedString = new String();
+			String finishedString;
 			finishedString = config.getOrginalItems() + "," + formattedString;
 
 			//Check if finished string = groundItems Config
@@ -174,7 +172,7 @@ public class HighlightStackablesPlugin extends Plugin {
 		final TileItem item = itemSpawned.getItem();
 		final int id = item.getId();
 		final ItemComposition itemComposition = itemManager.getItemComposition(id);
-		String exclusionList = groundItemsConfig.getHiddenItems().toString();
+		String exclusionList = groundItemsConfig.getHiddenItems();
 
 		if (itemComposition.isStackable() && !exclusionList.contains(itemComposition.getName())) {
 			if (config.inventoryMode()) {
@@ -213,7 +211,6 @@ public class HighlightStackablesPlugin extends Plugin {
 	@Subscribe
 	public void onItemDespawned(ItemDespawned itemDespawned) {
 
-		final ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
 		final TileItem item = itemDespawned.getItem();
 		final int id = item.getId();
 		final ItemComposition itemComposition = itemManager.getItemComposition(id);
@@ -235,7 +232,7 @@ public class HighlightStackablesPlugin extends Plugin {
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event) {
 		final ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
-		String exclusionList = groundItemsConfig.getHiddenItems().toString();
+		String exclusionList = groundItemsConfig.getHiddenItems();
 
 		int[] runeSlotVarbitValues = {client.getVarbitValue(29),client.getVarbitValue(1622),
 				client.getVarbitValue(1623),client.getVarbitValue(14285)};
@@ -314,21 +311,23 @@ public class HighlightStackablesPlugin extends Plugin {
 
 		int[] runeSlotVarbitValues = {client.getVarbitValue(29),client.getVarbitValue(1622),
 			client.getVarbitValue(1623),client.getVarbitValue(14285)};
-
-		for (int i = 0; i < runeSlotVarbitValues.length; i++)
+		if (event.getVarbitId() == 29 ||event.getVarbitId() == 1622 ||event.getVarbitId() == 1623 ||event.getVarbitId() == 14285)
 		{
-			if(runeSlotVarbitValues[i] != 0)
+			for (int i = 0; i < runeSlotVarbitValues.length; i++)
 			{
-				for (int j = 0; j < runes.length;j++)
+				if (runeSlotVarbitValues[i] != 0)
 				{
-					if(runeSlotVarbitValues[i] == j)
+					for (int j = 0; j < runes.length; j++)
 					{
-						final ItemComposition itemComposition = itemManager.getItemComposition(runes[j]);
-						spawnedItems.add(itemComposition.getName());
+						if (runeSlotVarbitValues[i] == j)
+						{
+							final ItemComposition itemComposition = itemManager.getItemComposition(runes[j]);
+							spawnedItems.add(itemComposition.getName());
+						}
+
 					}
 
 				}
-
 			}
 		}
 
